@@ -1,9 +1,25 @@
 # Linked-list 
 
-+ [234. Palindrome Linked List](#https://leetcode.com/problems/palindrome-linked-list/)
-+ [206. Reverse Linked List](#https://leetcode.com/problems/reverse-linked-list/)
++ [Reverse Linked List](#reverse-linked-list)
++ [Palindrome Linked List](#palindrome-linked-list)
 
-## 234. Palindrome Linked List
+## Reverse Linked List
+
+https://leetcode.com/problems/reverse-linked-list/
+
+```python
+class Solution:
+    def reverseList(self, head: ListNode) -> ListNode:
+        prev = None
+        while head:
+            next_node = head.next
+            head.next = prev
+            prev = head
+            head = next_node
+        return prev
+```
+
+## Palindrome Linked List
 
 https://leetcode.com/problems/palindrome-linked-list/
 
@@ -27,22 +43,6 @@ class Solution:
         return True
 
 def reversed(head):
-        prev = None
-        while head:
-            next_node = head.next
-            head.next = prev
-            prev = head
-            head = next_node
-        return prev
-```
-
-## 206. Reverse Linked List
-
-https://leetcode.com/problems/reverse-linked-list/
-
-```python
-class Solution:
-    def reverseList(self, head: ListNode) -> ListNode:
         prev = None
         while head:
             next_node = head.next
