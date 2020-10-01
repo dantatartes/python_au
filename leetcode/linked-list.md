@@ -2,6 +2,7 @@
 
 + [Reverse Linked List](#reverse-linked-list)
 + [Palindrome Linked List](#palindrome-linked-list)
++ [Middle of the Linked List](#middle-of-the-linked-list)
 
 ## Reverse Linked List
 
@@ -50,4 +51,18 @@ def reversed(head):
             prev = head
             head = next_node
         return prev
+```
+
+## Middle of the Linked List
+
+https://leetcode.com/problems/middle-of-the-linked-list/
+
+```python
+class Solution:
+    def middleNode(self, head: ListNode) -> ListNode:
+        fast = slow = head
+        while fast and fast.next:
+            fast = fast.next.next
+            slow = slow.next
+        return slow
 ```
