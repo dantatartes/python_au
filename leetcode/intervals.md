@@ -1,6 +1,7 @@
 # Intervals 
 
 + [Merge Intervals](#merge-intervals)
++ [Non-overlapping Intervals](#non-overlapping-intervals)
 
 ## Merge Intervals
 
@@ -9,7 +10,7 @@ https://leetcode.com/problems/merge-intervals/
 ```python
 class Solution:
     def merge(self, intervals: List[List[int]]) -> List[List[int]]:
-        if intervals == []:
+        if not intervals:
             return []
         intervals.sort(key=lambda interval: interval[0])
         merged = [intervals[0]]
@@ -20,4 +21,25 @@ class Solution:
             else:
                 merged.append(interval)
         return merged
+```
+
+## Non-overlapping Intervals
+
+https://leetcode.com/problems/non-overlapping-intervals/
+
+```python
+class Solution:
+    def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:
+        num_remove = 0
+        if not intervals:
+            return num_remove
+        intervals.sort(key=lambda x: x[1])
+        end = intervals[0][0]
+        for interval in intervals:
+            if interval[0] < end:
+                num_remove += 1
+            else:
+                end = interval[1]
+        return num_remove
+
 ```
