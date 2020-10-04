@@ -4,6 +4,7 @@
 + [Palindrome Linked List](#palindrome-linked-list)
 + [Middle of the Linked List](#middle-of-the-linked-list)
 + [Merge Two Sorted Lists](#merge-two-sorted-lists)
++ [Intersection of Two Linked Lists](#intersection-of-two-linked-lists)
 
 ## Reverse Linked List
 
@@ -85,4 +86,30 @@ class Solution:
         else:
             l2.next = self.mergeTwoLists(l1, l2.next)
             return l2
+```
+
+## Intersection of Two Linked Lists
+
+https://leetcode.com/problems/intersection-of-two-linked-lists/
+
+```python
+class Solution:
+    def getIntersectionNode(self, headA: ListNode, headB: ListNode) -> ListNode:
+        if not headA or not headB:
+            return None
+
+        curr_A, curr_B = headA, headB
+        while curr_A != curr_B:
+            if not curr_A:
+                curr_A = headB
+            else:
+                curr_A = curr_A.next
+
+            if not curr_B:
+                curr_B = headA
+            else:
+                curr_B = curr_B.next
+
+        return curr_A
+
 ```
