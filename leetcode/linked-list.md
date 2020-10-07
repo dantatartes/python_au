@@ -5,6 +5,7 @@
 + [Middle of the Linked List](#middle-of-the-linked-list)
 + [Merge Two Sorted Lists](#merge-two-sorted-lists)
 + [Intersection of Two Linked Lists](#intersection-of-two-linked-lists)
++ [Remove Nth Node From End of List](#remove-nth-node-from-end-of-list)
 
 ## Reverse Linked List
 
@@ -111,5 +112,25 @@ class Solution:
                 curr_B = curr_B.next
 
         return curr_A
+
+```
+
+## Remove Nth Node From End of List
+
+https://leetcode.com/problems/remove-nth-node-from-end-of-list/
+
+```python
+class Solution:
+    def removeNthFromEnd(self, head: ListNode, n: int) -> ListNode:
+        fast = slow = head
+        for i in range(n):
+            fast = fast.next
+        if not fast:
+            return head.next
+        while fast.next:
+            slow = slow.next
+            fast = fast.next
+        slow.next = slow.next.next
+        return head
 
 ```
