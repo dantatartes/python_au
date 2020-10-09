@@ -6,6 +6,7 @@
 + [Merge Two Sorted Lists](#merge-two-sorted-lists)
 + [Intersection of Two Linked Lists](#intersection-of-two-linked-lists)
 + [Remove Nth Node From End of List](#remove-nth-node-from-end-of-list)
++ [Linked List Cycle](#linked-list-cycle)
 
 ## Reverse Linked List
 
@@ -133,4 +134,22 @@ class Solution:
         slow.next = slow.next.next
         return head
 
+```
+
+## Linked List Cycle
+
+https://leetcode.com/problems/linked-list-cycle/
+
+```python
+class Solution:
+    def hasCycle(self, head: ListNode) -> bool:
+        if not head or not head.next:
+            return False
+        slow, fast = head, head.next
+        while slow != fast:
+            if not fast or not fast.next:
+                return False
+            slow = slow.next
+            fast = fast.next.next
+        return True
 ```
