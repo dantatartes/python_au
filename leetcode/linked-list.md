@@ -7,6 +7,7 @@
 + [Intersection of Two Linked Lists](#intersection-of-two-linked-lists)
 + [Remove Nth Node From End of List](#remove-nth-node-from-end-of-list)
 + [Linked List Cycle](#linked-list-cycle)
++ [Linked List Cycle II](#linked-list-cycle-ii)
 
 ## Reverse Linked List
 
@@ -152,4 +153,28 @@ class Solution:
             slow = slow.next
             fast = fast.next.next
         return True
+```
+
+## Linked List Cycle II
+
+https://leetcode.com/problems/linked-list-cycle-ii/
+
+```python
+class Solution:
+    def detectCycle(self, head: ListNode) -> ListNode:
+        if not head or not head.next:
+            return
+        slow, fast, have_cycle = head, head.next, False
+        while slow:
+            if not fast or not fast.next:
+                return
+            elif slow == fast and not have_cycle:
+                slow, fast, have_cycle = head, fast.next, True
+            if slow == fast and have_cycle:
+                return slow
+            if have_cycle:
+                fast = fast.next
+            else:
+                fast = fast.next.next
+            slow = slow.next
 ```
