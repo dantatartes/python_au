@@ -8,6 +8,7 @@
 + [Remove Nth Node From End of List](#remove-nth-node-from-end-of-list)
 + [Linked List Cycle](#linked-list-cycle)
 + [Linked List Cycle II](#linked-list-cycle-ii)
++ [Reorder List](#reorder-list)
 
 ## Reverse Linked List
 
@@ -177,4 +178,36 @@ class Solution:
             else:
                 fast = fast.next.next
             slow = slow.next
+```
+
+## Reorder List
+
+https://leetcode.com/problems/reorder-list/
+
+```python
+class Solution:
+    def reorderList(self, head: ListNode) -> None:
+        if not head:
+            return None
+
+        fast = slow = head
+
+        while fast and fast.next:
+            slow, fast = slow.next, fast.next.next
+
+        prev, cur = None, slow
+
+        while cur:
+            cur.next, prev, cur = prev, cur, cur.next
+
+        first, second = head, prev
+
+        while second.next:
+            next_hop = first.next
+            first.next = second
+            first = next_hop
+
+            next_hop = second.next
+            second.next = first
+            second = next_hop
 ```
