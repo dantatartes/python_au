@@ -1,6 +1,7 @@
 # Math 
 
 + [Fizz Buzz](#fizz-buzz)
++ [Reverse Integer](#reverse-integer)
 
 ## Fizz Buzz
 
@@ -20,4 +21,16 @@ class Solution:
             else:
                 m.append(str(i))
         return m
+```
+
+## Reverse Integer
+
+https://leetcode.com/problems/reverse-integer/
+
+```python
+class Solution:
+    def reverse(self, x: int) -> int:
+        sign = [1,-1][x < 0]
+        x_rev = sign * int(str(abs(x))[::-1])
+        return x_rev if -(2**31)-1 < x_rev < 2**31 else 0
 ```
