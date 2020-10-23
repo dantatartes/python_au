@@ -2,6 +2,7 @@
 
 + [Fizz Buzz](#fizz-buzz)
 + [Reverse Integer](#reverse-integer)
++ [Sqrt(x)](#sqrt(x))
 
 ## Fizz Buzz
 
@@ -33,4 +34,23 @@ class Solution:
         sign = [1,-1][x < 0]
         x_rev = sign * int(str(abs(x))[::-1])
         return x_rev if -(2**31)-1 < x_rev < 2**31 else 0
+```
+
+## Sqrt(x)
+
+https://leetcode.com/problems/sqrtx/
+
+```python
+class Solution:
+    def mySqrt(self, x: int) -> int:
+        lo, hi = 0, x
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            if mid * mid > x:
+                hi = mid - 1
+            elif mid * mid < x:
+                lo = mid + 1
+            else:
+                return mid
+        return hi
 ```
