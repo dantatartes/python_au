@@ -20,9 +20,9 @@ class Triangle:
         self.a_coords = a
         self.b_coords = b
         self.c_coords = c
-        self.a = sqrt((b.x - c.x) ** 2 + (b.y - c.y) ** 2)
-        self.b = sqrt((a.x - c.x) ** 2 + (a.y - c.y) ** 2)
-        self.c = sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
+        self.a = sqrt((b.x - c.x) * (b.x - c.x) + (b.y - c.y) * (b.y - c.y))
+        self.b = sqrt((a.x - c.x) * (a.x - c.x) + (a.y - c.y) * (a.y - c.y))
+        self.c = sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y))
 
     def __str__(self):
         return f"{self.a_coords.x} {self.a_coords.y} {self.b_coords.x} {self.b_coords.y} {self.c_coords.x} {self.c_coords.y}"
