@@ -3,23 +3,28 @@ import os
 
 
 class MdSource:
-    def __init__(self, title, link, code):
+    __slots__ = "title", "link", "code"
+
+    def __init__(self,
+                 title: str,
+                 link: str,
+                 code: str):
         self.title = title
         self.link = link
         self.code = code
 
-    def get_md_title(self):
+    def get_md_title(self) -> str:
         return "## " + self.title.split(". ")[1].strip("\n")
 
-    def get_md_link(self):
+    def get_md_link(self) -> str:
         title = self.title.split(". ")[1].strip("\n")
         lnk_tale = self.link.split("/")[-2]
         return f"+ [{title}](#{lnk_tale})"
 
-    def get_md_code(self):
+    def get_md_code(self) -> str:
         return f"```python\n{self.code}\n```\n"
 
-    def get_md_task(self):
+    def get_md_task(self) -> str:
         return f"{self.get_md_title()}\n\n{self.link}\n\n{self.get_md_code()}\n"
 
 
