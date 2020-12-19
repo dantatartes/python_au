@@ -3,6 +3,8 @@ from math import sqrt
 
 
 class Point:
+    __slots__ = "x", "y"
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -12,7 +14,9 @@ class Point:
 
 
 class Triangle:
-    def __init__(self, a, b, c):
+    __slots__ = "a_crds", "b_crds", "c_crds", "a", "b", "c"
+
+    def __init__(self, a: Point, b: Point, c: Point):
         self.a_crds = a
         self.b_crds = b
         self.c_crds = c
@@ -40,6 +44,8 @@ class Triangle:
 
 
 class TaskSolver:
+    __slots__ = "src", "dst", "raw_data", "data", "mx_square", "res_triangle"
+
     def __init__(self, src, dst):
         self.src = src
         self.dst = dst
