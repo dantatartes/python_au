@@ -14,18 +14,18 @@ class Point:
 
 
 class Triangle:
-    __slots__ = "a_crds", "b_crds", "c_crds", "a", "b", "c"
+    __slots__ = "a_coords", "b_coords", "c_coords", "a", "b", "c"
 
     def __init__(self, a: Point, b: Point, c: Point):
-        self.a_crds = a
-        self.b_crds = b
-        self.c_crds = c
+        self.a_coords = a
+        self.b_coords = b
+        self.c_coords = c
         self.a = sqrt((b.x - c.x) ** 2 + (b.y - c.y) ** 2)
         self.b = sqrt((a.x - c.x) ** 2 + (a.y - c.y) ** 2)
         self.c = sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
 
     def __str__(self):
-        return f"{self.a_crds.x} {self.a_crds.y} {self.b_crds.x} {self.b_crds.y} {self.c_crds.x} {self.c_crds.y}"
+        return f"{self.a_coords.x} {self.a_coords.y} {self.b_coords.x} {self.b_coords.y} {self.c_coords.x} {self.c_coords.y}"
 
     def is_triangle(self):
         return (self.a < self.b + self.c) and (self.b < self.c + self.a) and (self.c < self.a + self.b)
