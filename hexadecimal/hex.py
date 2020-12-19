@@ -9,7 +9,9 @@ class Node:
 
 
 class HexNumber:
-    def __init__(self, num):
+    __slots__ = "head", "lst"
+
+    def __init__(self, num: str):
         self.head = Node()
         self.lst = []
         for n in num[::-1]:
@@ -33,7 +35,9 @@ class HexNumber:
 
 
 class Solution:
-    def __init__(self, first, second):
+    __slots__ = "first", "second", "r", "result"
+
+    def __init__(self, first: HexNumber, second: HexNumber):
         self.first = first
         self.second = second
         self.r = 0
