@@ -7,60 +7,72 @@ GROUPS = ('1022', '1021')
 TOKEN = ''
 
 
-def make_link(user_login, repo_names) -> str:
-    return f'https://api.github.com/repos/{user_login}/{repo_names}/pulls?state=open'
-
-
 def prepare_headers():
     return {
-        'Autorization': f'token {TOKEN}',
-        'Content-Type': "application/json",
-        'Accept': "application/vnd.github.v3+json"
+        'Authorization': f'token {TOKEN}',
     }
 
 
-def get_all_user_prs(user_login: str, repo_names: str):
-    all_pr = requests.get(make_link(user_login, repo_names), headers=prepare_headers())
+def get_all_user_prs(user_login: str, repo_name: str):
+    all_pr = requests.get(f'https://api.github.com/repos/{user_login}/{repo_name}/pulls?state=open',
+                          headers=prepare_headers())
     return all_pr
 
 
-def get_all_pr_commits(pr):
+def get_all_pr_not_reviewed_commits(pr):
     raw_commits = requests.get(pr['commits_url'], headers=prepare_headers()).json()
-    nice_commits = list(map(lambda x: (x['commit']['message']), raw_commits))
+    # list of reviewed commits
+    reviewed = set(list(map(lambda x: x['commit_id'],
+                        requests.get(pr['review_comments_url'], headers=prepare_headers()).json()
+                            )))
+    raw_commits_no_reviewed = list(filter(lambda x: x['sha'] not in reviewed, raw_commits))
+    nice_commits = list(map(lambda x: x['commit']['message'], raw_commits_no_reviewed))
     return nice_commits
 
 
 def check_prefixes(title):
-    comments = []
+    message = ""
     title_splitted = title.split('-')
     pre = title_splitted[0]
     post = title_splitted[1].split(' ')
     if pre not in PREFIXES:
-        comments.append("Prefix is not in {}\n".format(PREFIXES))
+        message = f"{message}Prefix is not in {PREFIXES}\n"
     if post[0] not in GROUPS:
-        comments.append("Group is not in {}\n".format(GROUPS))
+        message = f"{message}Group is not in {GROUPS}\n"
     if len(post) > 1 and post[1] not in ACTIONS:
-        comments.append(f"Action not in {ACTIONS}\n")
-    return comments
-
-
-def create_message(pr):
-    message = f"Your PR: {pr['title']}\n{check_prefixes(pr['title'])}\n\n"
-    for commit_message in get_all_pr_commits(pr):
-        message = f'{message}Your commit: {commit_message}\n{check_prefixes(commit_message)}\n'
+        message = f"{message}Action is not in {ACTIONS}\n"
     return message
 
 
-def send_pr_comment(pr, message):
-    data = {'body': message,
-            'path': requests.get(pr['url'] + '/files', headers=prepare_headers()).json()[0]['filename'],
+def create_review(pr):
+    if check_prefixes(pr['title']):
+        review = f"Your PR: {pr['title']}\n{check_prefixes(pr['title'])}\n"
+    else:
+        review = ""
+    for commit_message in get_all_pr_not_reviewed_commits(pr):
+        if len(check_prefixes(commit_message)) > 1:
+            review = f'{review}Your commit: {commit_message}\n{check_prefixes(commit_message)}'
+    return review
+
+
+def send_pr_review(pr, message):
+    if message == "":
+        pass
+    else:
+        data = {
+            'body': message,
+            'path': requests.get(f"{pr['url']}/files", headers=prepare_headers()).json()[0]['filename'],
             'position': 1,
-            'commit_id': pr['head']['sha']}
-    r = requests.post(f"{pr['url']}/comments", headers=prepare_headers(), json=data)
-    print(r.json())
+            'commit_id': pr['head']['sha'],
+        }
+        requests.post(f"{pr['url']}/comments", headers=prepare_headers(), json=data)
 
 
 if __name__ == '__main__':
-    for pull_request in get_all_user_prs('dantatartes', 'python_au').json():
-        if create_message(pull_request):
-            send_pr_comment(pull_request, create_message(pull_request))
+    # import json
+    #
+    # with open('test_pulls.json', 'w', encoding='utf-8') as f:
+    #     json.dump(get_all_user_prs('dantatartes', 'test').json(), f, ensure_ascii=False, indent=4)
+    for pull_request in get_all_user_prs('dantatartes', 'test').json():
+        pr_review = create_review(pull_request)
+        send_pr_review(pull_request, pr_review)
