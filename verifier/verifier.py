@@ -1,4 +1,7 @@
 import requests
+from datetime import datetime
+import json
+from typing import *
 
 PREFIXES = ('LEETCODE', 'GENERATOR', 'HEXNUMBER', 'TRIANGLE', 'ITERATOR', 'REQUESTS')
 ACTIONS = ('Added', 'Deleted', 'Fixed', 'Refactored', 'Moved')
@@ -7,72 +10,112 @@ GROUPS = ('1022', '1021')
 TOKEN = ''
 
 
-def prepare_headers():
+def prepare_headers() -> Dict[str, str]:
     return {
         'Authorization': f'token {TOKEN}',
     }
 
 
-def get_all_user_prs(user_login: str, repo_name: str):
-    all_pr = requests.get(f'https://api.github.com/repos/{user_login}/{repo_name}/pulls?state=open',
-                          headers=prepare_headers())
-    return all_pr
+def prepare_body(pull: Dict[str, Any], comment: str) -> Dict[str, Union[str, int]]:
+    return {
+        'body': f"{comment}",
+        'path': requests.get(f"{pull['url']}/files", headers=prepare_headers()).json()[0]['filename'],
+        'position': 1,
+        'commit_id': pull['head']['sha']
+    }
 
 
-def get_all_pr_not_reviewed_commits(pr):
-    raw_commits = requests.get(pr['commits_url'], headers=prepare_headers()).json()
-    # list of reviewed commits
-    reviewed = set(list(map(lambda x: x['commit_id'],
-                        requests.get(pr['review_comments_url'], headers=prepare_headers()).json()
-                            )))
-    raw_commits_no_reviewed = list(filter(lambda x: x['sha'] not in reviewed, raw_commits))
-    nice_commits = list(map(lambda x: x['commit']['message'], raw_commits_no_reviewed))
-    return nice_commits
+def get_all_user_prs(user_login: str, repo_name: str, pr_state: str) -> List[Dict[str, Any]]:
+    url = f'https://api.github.com/repos/{user_login}/{repo_name}/pulls?state={pr_state}'
+    prs = requests.get(url, headers=prepare_headers())
+    return prs.json()
 
 
-def check_prefixes(title):
-    message = ""
-    title_splitted = title.split('-')
-    pre = title_splitted[0]
-    post = title_splitted[1].split(' ')
-    if pre not in PREFIXES:
-        message = f"{message}Prefix is not in {PREFIXES}\n"
-    if post[0] not in GROUPS:
-        message = f"{message}Group is not in {GROUPS}\n"
-    if len(post) > 1 and post[1] not in ACTIONS:
-        message = f"{message}Action is not in {ACTIONS}\n"
-    return message
+def get_all_pr_commits(pr: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return requests.get(pr['commits_url'], headers=prepare_headers()).json()
 
 
-def create_review(pr):
-    if check_prefixes(pr['title']):
-        review = f"Your PR: {pr['title']}\n{check_prefixes(pr['title'])}\n"
-    else:
-        review = ""
-    for commit_message in get_all_pr_not_reviewed_commits(pr):
-        if len(check_prefixes(commit_message)) > 1:
-            review = f'{review}Your commit: {commit_message}\n{check_prefixes(commit_message)}'
-    return review
+def check_prefixes(message: str) -> str:
+    comment = []
+    message_parts = message.split()
+    prefix_parts = message_parts[0].split('-')
+    if len(prefix_parts) == 1:
+        prefix_parts.append('')
+    elif len(prefix_parts) != 2:
+        prefix_parts = ['', '']
+    task, group = prefix_parts
+
+    if task not in PREFIXES:
+        comment.append(f"Message must start with code word in {PREFIXES}")
+
+    if group not in GROUPS:
+        comment.append(f"Message must contain group number in {GROUPS}")
+
+    if len(message_parts) == 1 or message_parts[1] not in ACTIONS:
+        comment.append(f"Message must start with {ACTIONS}")
+
+    if len(comment) != 0:
+        comment.insert(0, f"Invalid Commit Message: {message}")
+        return '\n'.join(comment)
+    return ''
 
 
-def send_pr_review(pr, message):
-    if message == "":
-        pass
-    else:
-        data = {
-            'body': message,
-            'path': requests.get(f"{pr['url']}/files", headers=prepare_headers()).json()[0]['filename'],
-            'position': 1,
-            'commit_id': pr['head']['sha'],
-        }
-        requests.post(f"{pr['url']}/comments", headers=prepare_headers(), json=data)
+def verify_pr(pr: Dict[str, Any]) -> None:
+    comments = []
+    all_commits = get_all_pr_commits(pr)
+    for commit in all_commits:
+        comment = check_prefixes(commit['commit']['message'])
+        if len(comment) > 0:
+            comments.append(comment)
+    if len(comments) != 0:
+        comments.insert(0, f"Invalid PULL Commits")
+        send_pr_comment(pr, '\n\n'.join(comments))
+
+
+def send_pr_comment(pull: Dict[str, Any], comment: str) -> str:
+    url = f"{pull['url']}/comments"
+    requests.post(url,
+                  headers=prepare_headers(),
+                  data=json.dumps(prepare_body(pull, comment)))
+    return pull['html_url']
+
+
+def str_to_date(date: str) -> datetime:
+    return datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+
+
+def get_comment_by_date(pr: Dict[str, Any], author: str) -> Optional[datetime]:
+    r = requests.get(pr['review_comments_url']).json()
+
+    if len(r) > 0 and r[-1]['user']['login'] == author:
+        return str_to_date(r[-1]['created_at'])
+    return None
+
+
+def get_commit_date(commit: Dict[str, Any]) -> datetime:
+    return str_to_date(commit['commit']['author']['date'])
+
+
+def check_new_commits(pr: Dict[str, Any], date: datetime) -> None:
+    comments = list()
+    all_commits = get_all_pr_commits(pr)
+    for commit in all_commits:
+        if get_commit_date(commit) > date:
+            comment = check_prefixes(commit['commit']['message'])
+            if len(comment) > 0:
+                comments.append(comment)
+
+    if len(comments) != 0:
+        comments.insert(0, "VERIFICATION RESULT: ")
+        send_pr_comment(pr, '\n\n'.join(comments))
 
 
 if __name__ == '__main__':
-    # import json
-    #
-    # with open('test_pulls.json', 'w', encoding='utf-8') as f:
-    #     json.dump(get_all_user_prs('dantatartes', 'test').json(), f, ensure_ascii=False, indent=4)
-    for pull_request in get_all_user_prs('dantatartes', 'test').json():
-        pr_review = create_review(pull_request)
-        send_pr_review(pull_request, pr_review)
+    repo_name, state, reviewer = 'test', 'open', 'dantatartes'
+    pulls = get_all_user_prs(user_login=reviewer, repo_name=repo_name, pr_state=state)
+    for pr in pulls:
+        comment_date = get_comment_by_date(pr, reviewer)
+        if comment_date is not None:
+            check_new_commits(pr, comment_date)
+        else:
+            verify_pr(pr)
